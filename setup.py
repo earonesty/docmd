@@ -15,6 +15,7 @@ setup(
     version="1.0.1",
     description="Convert python docstring documentation to github markdown files",
     packages=["docmd"],
+    url="https://github.com/AtakamaLLC/docmd",
     long_description=long_description(),
     long_description_content_type="text/markdown",
     setup_requires=["wheel"],
