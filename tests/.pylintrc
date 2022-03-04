@@ -1,0 +1,5 @@
+[MASTER]
+disable=trailing-whitespace,
+        missing-function-docstring,
+        too-few-public-methods,
+        exec-used,
