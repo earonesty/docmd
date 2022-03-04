@@ -19,7 +19,7 @@ setup(
     long_description=long_description(),
     long_description_content_type="text/markdown",
     setup_requires=["wheel"],
-    entry_points = {
-        'console_scripts': ['docmd=docmd.__main__:main'],
-    }
+    entry_points={
+        "console_scripts": ["docmd=docmd.__main__:main"],
+    },
 )
