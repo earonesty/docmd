@@ -14,7 +14,7 @@ lint:
 	PYTHONPATH=. python -m pylint --rcfile tests/.pylintrc tests/
 	black docmd tests
 	PYTHONPATH=../docmd python -mdocmd docmd > README.test
-	diff -q README.md README.test
+	diff README.md README.test
 	rm README.test
 
 black:
