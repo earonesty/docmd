@@ -26,6 +26,8 @@ from typing import IO, Generic
 
 log.basicConfig()
 
+__autodoc__ = False
+
 
 class DocMd:
     """Generator class for producing md files."""
@@ -40,6 +42,7 @@ class DocMd:
         """
         self.source_url = source_url
         self.source_path = None
+        self.seen = set()
         if output_dir:
             self.output_fh = None
             self.dir = pathlib.Path(output_dir)
@@ -178,6 +181,10 @@ class DocMd:
             show_name = show_name + " [" + ",".join(pnames) + "]"
         return show_name
 
+    @staticmethod
+    def __is_submod(sub, par):
+        return sub.startswith(par + ".")
+
     def module_gen(self, mod: ModuleType) -> str:
         """Generate markdown, given an imported module with docstring comments.
 
@@ -203,13 +210,16 @@ class DocMd:
 
         funcs = []
 
-        seen = set()
         for path, ent in self.__get_kids(mod):
-            if ent in seen:
+            if ent in self.seen:
                 continue
             log.debug("mod: %s, kid: %s", name, path)
+            if inspect.isclass(ent) and self.__is_submod(ent.__module__, mod.__name__):
+                # this class is accessible at a parent level
+                self.__import_up(ent, mod.__name__)
+
             if inspect.isclass(ent) and ent.__module__ == mod.__name__:
-                seen.add(ent)
+                self.seen.add(ent)
                 self._class_gen(file, ent, path)
 
             if (
@@ -217,7 +227,7 @@ class DocMd:
                 and ent.__module__ == mod.__name__
                 and getattr(ent, "__doc__")
             ):
-                seen.add(ent)
+                self.seen.add(ent)
                 funcs.append((path, ent))
 
             if inspect.ismodule(ent):
@@ -225,7 +235,7 @@ class DocMd:
                 childpath = pathlib.Path(filepath)
                 if parentpath in childpath.parents:
                     # generate submodule
-                    seen.add(ent)
+                    self.seen.add(ent)
                     sub_name = self.module_gen(ent)
 
                     # link to it
