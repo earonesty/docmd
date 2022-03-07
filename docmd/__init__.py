@@ -1,6 +1,10 @@
 """
 Generate api-style github markdown-files from python docstrings.
 
+```
+pip install docmd
+```
+
 Generate one file:
 
 ```
