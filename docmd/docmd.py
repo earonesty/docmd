@@ -214,9 +214,6 @@ class DocMd:
             if ent in self.seen:
                 continue
             log.debug("mod: %s, kid: %s", name, path)
-            if inspect.isclass(ent) and self.__is_submod(ent.__module__, mod.__name__):
-                # this class is accessible at a parent level
-                self.__import_up(ent, mod.__name__)
 
             if inspect.isclass(ent) and ent.__module__ == mod.__name__:
                 self.seen.add(ent)
