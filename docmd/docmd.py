@@ -26,8 +26,6 @@ from typing import IO, Generic
 
 log.basicConfig()
 
-__autodoc__ = False
-
 
 class DocMd:
     """Generator class for producing md files."""

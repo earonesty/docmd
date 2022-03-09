@@ -15,6 +15,7 @@ Generate a whole folder full of documentation:
 
 ```
 docmd my_module -out docs -url https://github.com/atakamallc/docmd/blob/master
+```
 """
 
 from .docmd import DocMd
