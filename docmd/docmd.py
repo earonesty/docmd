@@ -181,10 +181,6 @@ class DocMd:
             show_name = show_name + " [" + ",".join(pnames) + "]"
         return show_name
 
-    @staticmethod
-    def __is_submod(sub, par):
-        return sub.startswith(par + ".")
-
     def module_gen(self, mod: ModuleType) -> str:
         """Generate markdown, given an imported module with docstring comments.
 
