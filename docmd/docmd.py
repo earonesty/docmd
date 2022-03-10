@@ -40,6 +40,7 @@ class DocMd:
         """
         self.source_url = source_url
         self.source_path = None
+        self.seen = set()
         if output_dir:
             self.output_fh = None
             self.dir = pathlib.Path(output_dir)
@@ -203,13 +204,13 @@ class DocMd:
 
         funcs = []
 
-        seen = set()
         for path, ent in self.__get_kids(mod):
-            if ent in seen:
+            if ent in self.seen:
                 continue
             log.debug("mod: %s, kid: %s", name, path)
+
             if inspect.isclass(ent) and ent.__module__ == mod.__name__:
-                seen.add(ent)
+                self.seen.add(ent)
                 self._class_gen(file, ent, path)
 
             if (
@@ -217,7 +218,7 @@ class DocMd:
                 and ent.__module__ == mod.__name__
                 and getattr(ent, "__doc__")
             ):
-                seen.add(ent)
+                self.seen.add(ent)
                 funcs.append((path, ent))
 
             if inspect.ismodule(ent):
@@ -225,7 +226,7 @@ class DocMd:
                 childpath = pathlib.Path(filepath)
                 if parentpath in childpath.parents:
                     # generate submodule
-                    seen.add(ent)
+                    self.seen.add(ent)
                     sub_name = self.module_gen(ent)
 
                     # link to it

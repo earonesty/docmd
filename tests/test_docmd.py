@@ -87,6 +87,24 @@ def test_funcs_hidden():
     assert "undocumented" not in res
 
 
+def test_undocumented_class_is_shown():
+    mod = import_code(
+        """
+    class UndocFoo:
+        def docfunc():
+            '''got docs, so show it'''
+    """,
+        "foomod",
+    )
+
+    out = io.StringIO()
+    dmd = DocMd(output_fh=out)
+    dmd.module_gen(mod)
+    res = out.getvalue()
+    assert "UndocFoo" in res
+    assert "docfunc" in res
+
+
 def test_main(capsys):
     """test: main docgen"""
 
