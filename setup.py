@@ -12,7 +12,7 @@ def long_description():
 
 setup(
     name="docmd",
-    version="1.0.5",
+    version="1.0.6",
     description="Convert python docstring documentation to github markdown files",
     packages=["docmd"],
     url="https://github.com/AtakamaLLC/docmd",
