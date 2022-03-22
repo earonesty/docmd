@@ -28,8 +28,9 @@ log.basicConfig()
 
 
 def escapemd(txt):
-    # python idendifiers often have underscores
+    """Escape underscores."""
     return txt.replace("_", "\\_")
+
 
 class DocMd:
     """Generator class for producing md files."""
@@ -256,3 +257,6 @@ class DocMd:
                 + os.path.relpath(mod.__file__, self.source_path)
             )
             print(f"[(view source)]({source_link})", file=file)
+
+
+__all__ = ["DocMd"]

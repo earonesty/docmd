@@ -40,7 +40,7 @@ Example:
 Generator class for producing md files.
 
 
-#### .__init__(self, output_dir=None, source_url=None, output_fh=None)
+#### .\_\_init\_\_(self, output\_dir=None, source\_url=None, output\_fh=None)
 Construct a DocMd object:
 
 Args:
@@ -49,10 +49,10 @@ Args:
  - output_fh: file handle to use if no output_dir is specified (sys.stdout)
 
 
-#### .import_module(name)
+#### .import\_module(name)
 Wrapper for importlib, in case we want to support more ways of specifying a module.
 
-#### .module_gen(self, mod:module) -> str
+#### .module\_gen(self, mod:module) -> str
 Generate markdown, given an imported module with docstring comments.
 
 Returns: name of the module generated.
