@@ -26,12 +26,12 @@ def test_basic():
     '''Docstring for module'''
     import sys
     
-    class Foo:
+    class Foo_X:
         '''Docstring for foo class
         
         Second line'''
         
-        def meth1(arg, kw1=None):
+        def meth_1(arg, kw_1=None):
             '''
             Best meth1
             '''
@@ -45,11 +45,13 @@ def test_basic():
     res = out.getvalue()
     assert "Docstring for module" in res
     assert "Docstring for foo class" in res
-    assert "kw1" in res
+    assert "kw\\_1" in res
     assert "arg" in res
     assert "sys" not in res
     assert "Second line" in res
     assert "foomod" in res
+    assert "meth\\_1" in res
+    assert "Foo\\_X" in res
 
 
 def test_output_dir(tmp_path):

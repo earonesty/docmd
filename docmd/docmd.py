@@ -27,6 +27,11 @@ from typing import IO, Generic
 log.basicConfig()
 
 
+def escapemd(txt):
+    """Escape underscores."""
+    return txt.replace("_", "\\_")
+
+
 class DocMd:
     """Generator class for producing md files."""
 
@@ -83,18 +88,18 @@ class DocMd:
             if self.module_links:
                 parent_link = self.__module_name_to_md(parent_name)
                 print(
-                    f"{hash_level} [{parent_name}]({parent_link}).{child_name}",
+                    f"{hash_level} [{escapemd(parent_name)}]({parent_link}).{child_name}",
                     file=file,
                 )
             else:
                 parent_link = "#" + parent_name.replace(".", "_")
                 print(
-                    f"{hash_level} [{parent_name}]({parent_link}).{child_name}",
+                    f"{hash_level} [{escapemd(parent_name)}]({parent_link}).{child_name}",
                     file=file,
                 )
         else:
             # top level module
-            print(f"{hash_level} {name}", file=file)
+            print(f"{hash_level} {escapemd(name)}", file=file)
 
         if text and text.strip():
             print(self.__dedent(text), file=file)
@@ -124,8 +129,8 @@ class DocMd:
         doc = getattr(func, "__doc__")
         if not doc:
             return
-        sig = inspect.signature(func)
-        print("####", path + str(sig), file=file)
+        sig = escapemd(str(inspect.signature(func)))
+        print("####", escapemd(path) + sig, file=file)
         print(self.__dedent(doc), file=file)
         print(file=file)
 
@@ -158,11 +163,11 @@ class DocMd:
     def __show_class_name(class_obj, name):
         params = getattr(class_obj, "__parameters__", None)
 
-        show_name = name
+        show_name = escapemd(name)
         bases = []
         for base in class_obj.__bases__:
             if base != Generic:
-                bases.append(base.__name__)
+                bases.append(escapemd(base.__name__))
         if bases:
             show_name += "(" + ",".join(bases) + ")"
         if params:
@@ -174,7 +179,7 @@ class DocMd:
                     bound = getattr(
                         bound, "__name__", getattr(bound, "__forward_arg__", "")
                     )
-                    pname = pname + "=" + bound
+                    pname = escapemd(pname) + "=" + escapemd(bound)
                 pnames += [pname]
             show_name = show_name + " [" + ",".join(pnames) + "]"
         return show_name
@@ -252,3 +257,6 @@ class DocMd:
                 + os.path.relpath(mod.__file__, self.source_path)
             )
             print(f"[(view source)]({source_link})", file=file)
+
+
+__all__ = ["DocMd"]
