@@ -122,7 +122,7 @@ class DocMd:
         if not doc:
             return
         sig = escapemd(str(func.sig))
-        print("####", escapemd(func.path) + sig, file=file)
+        print("####", escapemd("." + func.name) + sig, file=file)
         print(doc, file=file)
         print(file=file)
 
@@ -192,7 +192,10 @@ class DocMd:
 
         self._module_gen(docmod)
 
-    def _module_gen(self, docmod):
+    def _module_gen(self, docmod: DocMod):
+        if not docmod.should_doc:
+            return
+
         name = docmod.name
 
         file = self.__get_output_file(name)
@@ -202,9 +205,9 @@ class DocMd:
         self.__show_source_link(file, docmod.mod)
 
         for dmod in docmod.modules:
-            # link to it
+            self._module_gen(dmod)
             if self.module_links:
-                self._module_gen(dmod)
+                # link to it
                 sub_file = self.__module_name_to_md(dmod.name)
                 print(f" - [{dmod.name}]({sub_file})", file=file)
 

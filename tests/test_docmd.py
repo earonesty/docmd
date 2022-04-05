@@ -141,6 +141,7 @@ def test_sub_link():
     dmd.module_gen(mod)
     out = out.getvalue()
     assert "[docmd](#docmd).docmd" in out
+    assert "[docmd](#docmd).docmod" not in out
 
 
 def test_multifile_link(tmp_path):
@@ -151,7 +152,6 @@ def test_multifile_link(tmp_path):
     assert "[docmd.docmd](docmd_docmd.md)" in out
     sub = (tmp_path / "docmd_docmd.md").open("r").read()
     assert "[docmd](docmd.md).docmd" in sub
-
 
 def test_skip_multi():
     """test: see once"""

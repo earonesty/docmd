@@ -42,9 +42,10 @@ def _get_kids(ent):
 class DocFunc:
     def __init__(self, func, path):
         self.path = path
+        self.name = func.__name__
         self.doc = _dedent(getattr(func, "__doc__"))
         self.sig = inspect.signature(func)
-        self.should_doc = getattr(func, "__autodoc__", True)
+        self.should_doc = getattr(func, "__autodoc__", True) and self.doc
 
 
 class DocCls:
@@ -52,12 +53,15 @@ class DocCls:
         self.name = name
         self.show_name = self.__show_class_name(class_obj, name)
         self.doc = _dedent(getattr(class_obj, "__doc__"))
-        self.should_doc = getattr(class_obj, "__autodoc__", True)
         self.funcs = []
 
         for path, ent in _get_kids(class_obj):
             if inspect.isfunction(ent):
                 self.funcs.append(DocFunc(ent, name + "." + path))
+
+        has_docs = self.doc or any(obj.should_doc for obj in self.funcs)
+
+        self.should_doc = getattr(class_obj, "__autodoc__", True) and has_docs
 
     @staticmethod
     def __show_class_name(class_obj, name):
@@ -89,7 +93,6 @@ class DocMod:
     def __init__(self, mod, seen=None):
         self.name = mod.__name__
         self.doc = _dedent(getattr(mod, "__doc__"))
-        self.should_doc = getattr(mod, "__autodoc__", True)
         self.mod = mod
         self.parent_path = pathlib.Path(os.path.dirname(self.mod.__file__))
         self.seen = seen or set()
@@ -97,9 +100,10 @@ class DocMod:
         self.modules = []
         self.funcs = []
         self._walk()
+        has_docs = self.doc or any(obj.should_doc for obj in (*self.classes, *self.modules, *self.funcs)) or self.funcs
+        self.should_doc = getattr(mod, "__autodoc__", True) and has_docs
 
     def _walk(self):
-
         for path, ent in _get_kids(self.mod):
             if ent in self.seen:
                 continue
