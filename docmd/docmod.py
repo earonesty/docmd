@@ -1,3 +1,6 @@
+"""
+Python module documentation extraction.
+"""
 import re
 import inspect
 import os
@@ -8,6 +11,8 @@ import textwrap
 from typing import Generic
 
 log.basicConfig()
+
+__autodoc__ = False
 
 
 def _dedent(doc):
@@ -39,7 +44,10 @@ def _get_kids(ent):
     return res
 
 
+# pylint: disable=too-few-public-methods
 class DocFunc:
+    """A documented function."""
+
     def __init__(self, func, path):
         self.path = path
         self.name = func.__name__
@@ -49,6 +57,8 @@ class DocFunc:
 
 
 class DocCls:
+    """A documented class."""
+
     def __init__(self, class_obj, name):
         self.name = name
         self.show_name = self.__show_class_name(class_obj, name)
@@ -90,46 +100,54 @@ class DocCls:
 
 
 class DocMod:
+    """A documented module."""
+
     def __init__(self, mod, seen=None):
         self.name = mod.__name__
         self.doc = _dedent(getattr(mod, "__doc__"))
         self.mod = mod
-        self.parent_path = pathlib.Path(os.path.dirname(self.mod.__file__))
-        self.seen = seen or set()
         self.classes = []
         self.modules = []
         self.funcs = []
-        self._walk()
-        has_docs = self.doc or any(obj.should_doc for obj in (*self.classes, *self.modules, *self.funcs)) or self.funcs
+        seen = seen or set()
+        self.__walk(seen)
+        has_docs = (
+            self.doc
+            or any(
+                obj.should_doc for obj in (*self.classes, *self.modules, *self.funcs)
+            )
+            or self.funcs
+        )
         self.should_doc = getattr(mod, "__autodoc__", True) and has_docs
 
-    def _walk(self):
+    def __walk(self, seen):
+        parent_path = pathlib.Path(os.path.dirname(self.mod.__file__))
         for path, ent in _get_kids(self.mod):
-            if ent in self.seen:
+            if ent in seen:
                 continue
 
             if inspect.isclass(ent) and ent.__module__ == self.mod.__name__:
-                self.seen.add(ent)
-                self.add_class(ent, path)
+                seen.add(ent)
+                self.__add_class(ent, path)
 
             if (
-                    inspect.isfunction(ent)
-                    and ent.__module__ == self.mod.__name__
-                    and getattr(ent, "__doc__")
+                inspect.isfunction(ent)
+                and ent.__module__ == self.mod.__name__
+                and getattr(ent, "__doc__")
             ):
-                self.seen.add(ent)
+                seen.add(ent)
                 self.funcs.append(DocFunc(ent, path))
 
             if inspect.ismodule(ent):
                 filepath = getattr(ent, "__file__", "")
                 childpath = pathlib.Path(filepath)
 
-                if self.parent_path in childpath.parents:
+                if parent_path in childpath.parents:
                     # generate submodule
-                    self.seen.add(ent)
-                    self.modules.append(DocMod(ent, seen=self.seen))
+                    seen.add(ent)
+                    self.modules.append(DocMod(ent, seen=seen))
 
-    def add_class(self, class_obj, name):
+    def __add_class(self, class_obj, name):
         self.classes.append(DocCls(class_obj, name))
 
 

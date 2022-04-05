@@ -153,6 +153,7 @@ def test_multifile_link(tmp_path):
     sub = (tmp_path / "docmd_genmd.md").open("r").read()
     assert "[docmd](docmd.md).genmd" in sub
 
+
 def test_skip_multi():
     """test: see once"""
     mod = sys.modules[__name__]

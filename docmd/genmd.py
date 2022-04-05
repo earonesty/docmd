@@ -19,7 +19,7 @@ import os
 import pathlib
 import logging as log
 from types import ModuleType
-from typing import IO, Generic
+from typing import IO
 
 from docmd.docmod import DocMod, DocCls, DocFunc
 
@@ -132,32 +132,7 @@ class GenMd:
                 print("\n", file=file)
             print(tmpio.getvalue(), file=file)
 
-    @staticmethod
-    def __show_class_name(class_obj, name):
-        params = getattr(class_obj, "__parameters__", None)
-
-        show_name = escapemd(name)
-        bases = []
-        for base in class_obj.__bases__:
-            if base != Generic:
-                bases.append(escapemd(base.__name__))
-        if bases:
-            show_name += "(" + ",".join(bases) + ")"
-        if params:
-            pnames = []
-            for param in params:
-                pname = param.__name__
-                bound = param.__bound__
-                if bound:
-                    bound = getattr(
-                        bound, "__name__", getattr(bound, "__forward_arg__", "")
-                    )
-                    pname = escapemd(pname) + "=" + escapemd(bound)
-                pnames += [pname]
-            show_name = show_name + " [" + ",".join(pnames) + "]"
-        return show_name
-
-    def module_gen(self, mod: ModuleType) -> str:
+    def module_gen(self, mod: ModuleType) -> None:
         """Generate markdown, given an imported module with docstring comments.
 
         Returns: name of the module generated.
@@ -203,8 +178,6 @@ class GenMd:
 
         if file != self.output_fh:
             file.close()
-
-        return name
 
     def __show_source_link(self, file, mod):
         if self.source_url:

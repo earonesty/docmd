@@ -10,9 +10,9 @@ readme:
 	PYTHONPATH=../docmd python -mdocmd docmd > README.md
 
 lint:
+	black docmd tests
 	python -m pylint docmd
 	PYTHONPATH=. python -m pylint --rcfile tests/.pylintrc tests/
-	black docmd tests
 
 black:
 	black docmd tests
