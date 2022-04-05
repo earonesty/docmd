@@ -190,6 +190,9 @@ class DocMd:
             log.debug("set source path: %s", parentpath)
             self.source_path = parentpath
 
+        # force doc for top level
+        docmod.should_doc = True
+
         self._module_gen(docmod)
 
     def _module_gen(self, docmod: DocMod):
