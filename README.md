@@ -47,7 +47,7 @@ Args:
 #### .import\_module(name)
 Wrapper for importlib, in case we want to support more ways of specifying a module.
 
-#### .module\_gen(self, mod:module) -> str
+#### .module\_gen(self, mod:module) -> None
 Generate markdown, given an imported module with docstring comments.
 
 Returns: name of the module generated.
