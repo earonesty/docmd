@@ -10,12 +10,8 @@ from typing import Generic
 log.basicConfig()
 
 
-def escapemd(txt):
-    """Escape underscores."""
-    return txt.replace("_", "\\_")
-
-
 def _dedent(doc):
+    doc = doc or ""
     doc = doc.strip()
     first_dent = re.match("[^ ][^\n]+\r?\n+( {2,})", doc)
     if first_dent:
@@ -67,11 +63,11 @@ class DocCls:
     def __show_class_name(class_obj, name):
         params = getattr(class_obj, "__parameters__", None)
 
-        show_name = escapemd(name)
+        show_name = name
         bases = []
         for base in class_obj.__bases__:
             if base != Generic:
-                bases.append(escapemd(base.__name__))
+                bases.append(base.__name__)
         if bases:
             show_name += "(" + ",".join(bases) + ")"
         if params:
@@ -83,7 +79,7 @@ class DocCls:
                     bound = getattr(
                         bound, "__name__", getattr(bound, "__forward_arg__", "")
                     )
-                    pname = escapemd(pname) + "=" + escapemd(bound)
+                    pname = pname + "=" + bound
                 pnames += [pname]
             show_name = show_name + " [" + ",".join(pnames) + "]"
         return show_name
@@ -96,7 +92,7 @@ class DocMod:
         self.should_doc = getattr(mod, "__autodoc__", True)
         self.mod = mod
         self.parent_path = pathlib.Path(os.path.dirname(self.mod.__file__))
-        self.seen = seen or {}
+        self.seen = seen or set()
         self.classes = []
         self.modules = []
         self.funcs = []
@@ -110,7 +106,7 @@ class DocMod:
 
             if inspect.isclass(ent) and ent.__module__ == self.mod.__name__:
                 self.seen.add(ent)
-                self.mod.add_class(ent, path)
+                self.add_class(ent, path)
 
             if (
                     inspect.isfunction(ent)

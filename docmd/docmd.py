@@ -12,19 +12,15 @@ Example:
 ```
 """
 import io
-import re
 import sys
 import importlib
-import inspect
 import os
 
 import pathlib
 import logging as log
-import textwrap
 from types import ModuleType
 from typing import IO, Generic
 
-import docmd
 from docmd.docmod import DocMod, DocCls, DocFunc
 
 log.basicConfig()
@@ -48,7 +44,6 @@ class DocMd:
         """
         self.source_url = source_url
         self.source_path = None
-        self.seen = set()
         if output_dir:
             self.output_fh = None
             self.dir = pathlib.Path(output_dir)
@@ -139,7 +134,7 @@ class DocMd:
         if not dcls.should_doc:
             return
 
-        show_name = dcls.show_name
+        show_name = escapemd(dcls.show_name)
 
         text = dcls.doc
         hash_level = "##"
@@ -195,19 +190,21 @@ class DocMd:
             log.debug("set source path: %s", parentpath)
             self.source_path = parentpath
 
+        self._module_gen(docmod)
+
+    def _module_gen(self, docmod):
         name = docmod.name
 
         file = self.__get_output_file(name)
 
         self.__module_header(file, docmod)
 
-        self.__show_source_link(file, mod)
-
-        funcs = []
+        self.__show_source_link(file, docmod.mod)
 
         for dmod in docmod.modules:
             # link to it
             if self.module_links:
+                self._module_gen(dmod)
                 sub_file = self.__module_name_to_md(dmod.name)
                 print(f" - [{dmod.name}]({sub_file})", file=file)
 
@@ -216,7 +213,7 @@ class DocMd:
 
         if docmod.funcs:
             print("## Functions:\n", file=file)
-            for func in funcs:
+            for func in docmod.funcs:
                 self._func_gen(file, func)
 
         if file != self.output_fh:
