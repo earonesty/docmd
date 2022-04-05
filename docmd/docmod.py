@@ -133,7 +133,6 @@ class DocMod:
             if (
                 inspect.isfunction(ent)
                 and ent.__module__ == self.mod.__name__
-                and getattr(ent, "__doc__")
             ):
                 seen.add(ent)
                 self.funcs.append(DocFunc(ent, path))

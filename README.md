@@ -24,9 +24,9 @@ Using docmd from python.
 Example:
 
 ```
-    from docmd import DocMd
+    from docmd import GenMd
 
-    d = DocMd()
+    d = GenMd()
     mod = d.importlib("module")
     d.module_gen(mod)
 ```
