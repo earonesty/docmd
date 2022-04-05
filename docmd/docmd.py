@@ -24,6 +24,9 @@ import textwrap
 from types import ModuleType
 from typing import IO, Generic
 
+import docmd
+from docmd.docmod import DocMod, DocCls, DocFunc
+
 log.basicConfig()
 
 
@@ -71,17 +74,10 @@ class DocMd:
         """Wrapper for importlib, in case we want to support more ways of specifying a module."""
         return importlib.import_module(name)
 
-    @staticmethod
-    def __dedent(doc):
-        first_dent = re.match("[^ ][^\n]+\r?\n+( {2,})", doc)
-        if first_dent:
-            # we assume you mean for the first line to be "dedented" along with the next
-            doc = first_dent[1] + doc
-        doc = textwrap.dedent(doc)
-        return doc
-
-    def __module_header(self, file: IO, name: str, text: str):
+    def __module_header(self, file: IO, docmod: DocMod):
         hash_level = "#" * 1
+        name = docmod.name
+        text = docmod.doc
         if "." in name:
             # link back to top
             parent_name, child_name = name.rsplit(".", 1)
@@ -101,8 +97,8 @@ class DocMd:
             # top level module
             print(f"{hash_level} {escapemd(name)}", file=file)
 
-        if text and text.strip():
-            print(self.__dedent(text), file=file)
+        if text:
+            print(text, file=file)
         else:
             log.warning("no docstring for: %s", name)
         print("\n", file=file)
@@ -125,37 +121,37 @@ class DocMd:
 
         return res
 
-    def _func_gen(self, file: IO, func, path):
-        doc = getattr(func, "__doc__")
+    @staticmethod
+    def _func_gen(file: IO, func: DocFunc):
+        doc = func.doc
         if not doc:
             return
-        sig = escapemd(str(inspect.signature(func)))
-        print("####", escapemd(path) + sig, file=file)
-        print(self.__dedent(doc), file=file)
+        sig = escapemd(str(func.sig))
+        print("####", escapemd(func.path) + sig, file=file)
+        print(doc, file=file)
         print(file=file)
 
     @staticmethod
     def __should_doc(obj):
         return getattr(obj, "__autodoc__", True)
 
-    def _class_gen(self, file: IO, class_obj, name):
-        if not self.__should_doc(class_obj):
+    def _class_gen(self, file: IO, dcls: DocCls):
+        if not dcls.should_doc:
             return
 
-        show_name = self.__show_class_name(class_obj, name)
+        show_name = dcls.show_name
 
-        text = getattr(class_obj, "__doc__")
+        text = dcls.doc
         hash_level = "##"
 
         tmpio = io.StringIO()
-        for path, ent in self.__get_kids(class_obj):
-            if inspect.isfunction(ent):
-                self._func_gen(tmpio, ent, "." + path)
+        for func in dcls.funcs:
+            self._func_gen(tmpio, func)
 
         if text or tmpio.getvalue().strip():
             print(f"{hash_level} {show_name}", file=file)
             if text:
-                print(self.__dedent(text), file=file)
+                print(text, file=file)
                 print("\n", file=file)
             print(tmpio.getvalue(), file=file)
 
@@ -192,57 +188,36 @@ class DocMd:
         if not self.__should_doc(mod):
             return ""
 
+        docmod = DocMod(mod)
+
         parentpath = pathlib.Path(os.path.dirname(mod.__file__))
         if not self.source_path:
             log.debug("set source path: %s", parentpath)
             self.source_path = parentpath
 
-        name = mod.__name__
+        name = docmod.name
 
         file = self.__get_output_file(name)
 
-        mod_doc = getattr(mod, "__doc__")
-
-        self.__module_header(file, name, mod_doc)
+        self.__module_header(file, docmod)
 
         self.__show_source_link(file, mod)
 
         funcs = []
 
-        for path, ent in self.__get_kids(mod):
-            if ent in self.seen:
-                continue
-            log.debug("mod: %s, kid: %s", name, path)
+        for dmod in docmod.modules:
+            # link to it
+            if self.module_links:
+                sub_file = self.__module_name_to_md(dmod.name)
+                print(f" - [{dmod.name}]({sub_file})", file=file)
 
-            if inspect.isclass(ent) and ent.__module__ == mod.__name__:
-                self.seen.add(ent)
-                self._class_gen(file, ent, path)
+        for dcls in docmod.classes:
+            self._class_gen(file, dcls)
 
-            if (
-                inspect.isfunction(ent)
-                and ent.__module__ == mod.__name__
-                and getattr(ent, "__doc__")
-            ):
-                self.seen.add(ent)
-                funcs.append((path, ent))
-
-            if inspect.ismodule(ent):
-                filepath = getattr(ent, "__file__", "")
-                childpath = pathlib.Path(filepath)
-                if parentpath in childpath.parents:
-                    # generate submodule
-                    self.seen.add(ent)
-                    sub_name = self.module_gen(ent)
-
-                    # link to it
-                    if sub_name and self.module_links:
-                        sub_file = self.__module_name_to_md(sub_name)
-                        print(f" - [{sub_name}]({sub_file})", file=file)
-
-        if funcs:
+        if docmod.funcs:
             print("## Functions:\n", file=file)
-            for path, ent in funcs:
-                self._func_gen(file, ent, path)
+            for func in funcs:
+                self._func_gen(file, func)
 
         if file != self.output_fh:
             file.close()
