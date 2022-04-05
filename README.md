@@ -1,5 +1,4 @@
 # docmd
-
 Generate api-style github markdown-files from python docstrings.
 
 ```
@@ -19,9 +18,7 @@ docmd my_module -out docs -url https://github.com/atakamallc/docmd/blob/master
 ```
 
 
-
-# [docmd](#docmd).docmd
-
+# [docmd](#docmd).genmd
 Using docmd from python.
 
 Example:
@@ -35,8 +32,7 @@ Example:
 ```
 
 
-
-## DocMd(object)
+## GenMd(object)
 Generator class for producing md files.
 
 
@@ -48,7 +44,6 @@ Args:
  - source_url: url for making source links
  - output_fh: file handle to use if no output_dir is specified (sys.stdout)
 
-
 #### .import\_module(name)
 Wrapper for importlib, in case we want to support more ways of specifying a module.
 
@@ -56,6 +51,5 @@ Wrapper for importlib, in case we want to support more ways of specifying a modu
 Generate markdown, given an imported module with docstring comments.
 
 Returns: name of the module generated.
-
 
 

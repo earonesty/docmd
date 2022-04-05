@@ -6,7 +6,7 @@ import textwrap
 import types
 from typing import TypeVar, Generic
 
-from docmd import DocMd
+from docmd import GenMd
 from docmd.__main__ import main
 
 
@@ -40,7 +40,7 @@ def test_basic():
     )
 
     out = io.StringIO()
-    dmd = DocMd(output_fh=out)
+    dmd = GenMd(output_fh=out)
     dmd.module_gen(mod)
     res = out.getvalue()
     assert "Docstring for module" in res
@@ -57,7 +57,7 @@ def test_basic():
 def test_output_dir(tmp_path):
     """test: output dir"""
     mod = sys.modules[__name__]
-    dmd = DocMd(output_dir=tmp_path)
+    dmd = GenMd(output_dir=tmp_path)
     dmd.module_gen(mod)
     dirlist = list(tmp_path.iterdir())
     assert len(dirlist) == 1
@@ -82,7 +82,7 @@ def test_funcs_hidden():
     )
 
     out = io.StringIO()
-    dmd = DocMd(output_fh=out)
+    dmd = GenMd(output_fh=out)
     dmd.module_gen(mod)
     res = out.getvalue()
     assert "foomod" in res
@@ -100,7 +100,7 @@ def test_undocumented_class_is_shown():
     )
 
     out = io.StringIO()
-    dmd = DocMd(output_fh=out)
+    dmd = GenMd(output_fh=out)
     dmd.module_gen(mod)
     res = out.getvalue()
     assert "UndocFoo" in res
@@ -137,27 +137,27 @@ def test_main_debug(caplog):
 def test_sub_link():
     mod = importlib.import_module("docmd")
     out = io.StringIO()
-    dmd = DocMd(output_fh=out)
+    dmd = GenMd(output_fh=out)
     dmd.module_gen(mod)
     out = out.getvalue()
-    assert "[docmd](#docmd).docmd" in out
+    assert "[docmd](#docmd).genmd" in out
     assert "[docmd](#docmd).docmod" not in out
 
 
 def test_multifile_link(tmp_path):
     mod = importlib.import_module("docmd")
-    dmd = DocMd(output_dir=tmp_path)
+    dmd = GenMd(output_dir=tmp_path)
     dmd.module_gen(mod)
     out = (tmp_path / "docmd.md").open("r").read()
-    assert "[docmd.docmd](docmd_docmd.md)" in out
-    sub = (tmp_path / "docmd_docmd.md").open("r").read()
-    assert "[docmd](docmd.md).docmd" in sub
+    assert "[docmd.genmd](docmd_genmd.md)" in out
+    sub = (tmp_path / "docmd_genmd.md").open("r").read()
+    assert "[docmd](docmd.md).genmd" in sub
 
 def test_skip_multi():
     """test: see once"""
     mod = sys.modules[__name__]
     out = io.StringIO()
-    dmd = DocMd(output_fh=out)
+    dmd = GenMd(output_fh=out)
     dmd.module_gen(mod)
     # prevent someone from breaking the test
     assert should_skip_this == test_skip_multi
@@ -178,7 +178,7 @@ def test_skip_noauto():
         "foomod",
     )
     out = io.StringIO()
-    dmd = DocMd(output_fh=out)
+    dmd = GenMd(output_fh=out)
     dmd.module_gen(mod)
     assert not out.getvalue()
 
@@ -200,7 +200,7 @@ def test_skip_classes():
         "foomod",
     )
     out = io.StringIO()
-    dmd = DocMd(output_fh=out)
+    dmd = GenMd(output_fh=out)
     dmd.module_gen(mod)
     assert "Bar" not in out.getvalue()
     assert "Foo" in out.getvalue()
@@ -230,7 +230,7 @@ class Typed2(Generic[T2]):
 def test_generic_bound_type():
     mod = sys.modules[__name__]
     out = io.StringIO()
-    dmd = DocMd(output_fh=out)
+    dmd = GenMd(output_fh=out)
     dmd.module_gen(mod)
     assert "Typed1 [T1=int]" in out.getvalue()
     assert "Typed2 [T2=int]" in out.getvalue()

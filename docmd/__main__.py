@@ -5,7 +5,7 @@ __autodoc__ = False
 import argparse
 import logging as log
 
-from docmd import DocMd
+from docmd import GenMd
 
 
 def parse_args():
@@ -40,7 +40,7 @@ def main():
     args = parse_args()
     if args.debug:
         log.getLogger().setLevel(log.DEBUG)
-    docmd = DocMd(output_dir=args.out, source_url=args.src)
+    docmd = GenMd(output_dir=args.out, source_url=args.src)
     mod = docmd.import_module(args.module)
     docmd.module_gen(mod)
 

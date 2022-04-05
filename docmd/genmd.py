@@ -31,7 +31,7 @@ def escapemd(txt):
     return txt.replace("_", "\\_")
 
 
-class DocMd:
+class GenMd:
     """Generator class for producing md files."""
 
     def __init__(self, output_dir=None, source_url=None, output_fh=None):
@@ -99,24 +99,6 @@ class DocMd:
         print("\n", file=file)
 
     @staticmethod
-    def __get_kids(ent):
-        pub = getattr(ent, "__all__", None)
-        if not pub:
-            pub = []
-            for name in ent.__dict__:
-                if name.startswith("_") and name != "__init__":
-                    continue
-                pub.append(name)
-        pub = sorted(pub)
-        res = []
-        for name in pub:
-            obj = getattr(ent, name, None)
-            if obj is not None:
-                res.append((name, obj))
-
-        return res
-
-    @staticmethod
     def _func_gen(file: IO, func: DocFunc):
         doc = func.doc
         if not doc:
@@ -180,18 +162,15 @@ class DocMd:
 
         Returns: name of the module generated.
         """
-        if not self.__should_doc(mod):
-            return ""
-
         docmod = DocMod(mod)
+
+        # force doc for top level
+        docmod.should_doc = self.__should_doc(mod)
 
         parentpath = pathlib.Path(os.path.dirname(mod.__file__))
         if not self.source_path:
             log.debug("set source path: %s", parentpath)
             self.source_path = parentpath
-
-        # force doc for top level
-        docmod.should_doc = True
 
         self._module_gen(docmod)
 
@@ -237,4 +216,4 @@ class DocMd:
             print(f"[(view source)]({source_link})", file=file)
 
 
-__all__ = ["DocMd"]
+__all__ = ["GenMd"]
