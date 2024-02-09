@@ -18,8 +18,7 @@ __autodoc__ = False
 def _dedent(doc):
     doc = doc or ""
     doc = doc.strip()
-    first_dent = re.match("[^ ][^\n]+\r?\n+( {2,})", doc)
-    if first_dent:
+    if first_dent := re.match("[^ ][^\n]+\r?\n+( {2,})", doc):
         # we assume you mean for the first line to be "dedented" along with the next
         doc = first_dent[1] + doc
     doc = textwrap.dedent(doc)
@@ -37,8 +36,7 @@ def _get_kids(ent):
     pub = sorted(pub)
     res = []
     for name in pub:
-        obj = getattr(ent, name, None)
-        if obj is not None:
+        if (obj := getattr(ent, name, None)) is not None:
             res.append((name, obj))
 
     return res
